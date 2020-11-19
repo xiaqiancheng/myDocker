@@ -19,8 +19,8 @@ myDocker
     │   ├── docker-composer.yml
     │   ├── env-example
     ├── logs
-    └── README.md
-        .gitignore
+    ├── README.md
+    ├── .gitignore
 ```
 
 > 第一次启动时，需要通过 docker pull 拉去镜像到本地，所以需要等待一段时间
