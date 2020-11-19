@@ -1,0 +1,12 @@
+2020/11/17 10:41:48 [emerg] 1#1: host not found in upstream "php-fpm" in /etc/nginx/conf.d/yyk.conf:60
+2020/11/17 10:41:48 [emerg] 1#1: host not found in upstream "php-fpm" in /etc/nginx/conf.d/yyk.conf:60
+2020/11/17 10:41:49 [emerg] 1#1: host not found in upstream "php-fpm" in /etc/nginx/conf.d/yyk.conf:60
+2020/11/17 10:41:50 [emerg] 1#1: host not found in upstream "php-fpm" in /etc/nginx/conf.d/yyk.conf:60
+2020/11/17 10:41:51 [emerg] 1#1: host not found in upstream "php-fpm" in /etc/nginx/conf.d/yyk.conf:60
+2020/11/17 10:41:53 [emerg] 1#1: host not found in upstream "php-fpm" in /etc/nginx/conf.d/yyk.conf:60
+2020/11/17 10:41:57 [emerg] 1#1: host not found in upstream "php-fpm" in /etc/nginx/conf.d/yyk.conf:60
+2020/11/17 10:42:04 [emerg] 1#1: host not found in upstream "php-fpm" in /etc/nginx/conf.d/yyk.conf:60
+2020/11/17 10:42:17 [emerg] 1#1: host not found in upstream "php-fpm" in /etc/nginx/conf.d/yyk.conf:60
+2020/11/17 10:42:43 [emerg] 1#1: host not found in upstream "php-fpm" in /etc/nginx/conf.d/yyk.conf:60
+2020/11/17 10:43:35 [emerg] 1#1: host not found in upstream "php-fpm" in /etc/nginx/conf.d/yyk.conf:60
+2020/11/17 10:44:35 [emerg] 1#1: host not found in upstream "php-fpm" in /etc/nginx/conf.d/yyk.conf:60

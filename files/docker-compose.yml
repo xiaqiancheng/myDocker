@@ -1,0 +1,102 @@
+version: '2'
+
+networks:
+  frontend:
+    driver: ${NETWORKS_DRIVER}
+  backend:
+    driver: ${NETWORKS_DRIVER}
+
+services:
+
+  php-fpm72:
+    container_name: "espier-php"
+    build:
+      context: php72/
+      args:
+        - LNMP_PHP72_VERSION=${PHP72_VERSION}
+        - INSTALL_PHPREDIS=${PHP_FPM_INSTALL_PHPREDIS}
+        - INSTALL_MEMCACHED=${PHP_FPM_INSTALL_MEMCACHED}
+        - INSTALL_SWOOLE=${PHP_FPM_INSTALL_SWOOLE}
+    ports:
+      - "9000:9000"
+    networks:
+      - backend
+    volumes:
+      - ${APP_CODE_PATH_HOST}:${APP_CODE_PATH_CONTAINER}${APP_CODE_CONTAINER_FLAG}
+      - ./php72/php-dev.ini:/usr/local/etc/php/php.ini:cached
+      - ./php72/php-fpm.conf:/usr/local/etc/php-fpm.conf:cached
+      - ./php72/php-fpm.d:/usr/local/etc/php-fpm.d:cached
+      - ./php72/worker/supervisor:/etc/supervisor:cached
+      - ./php72/worker/crontabs/root:/var/spool/cron/crontabs/root:cached
+      - ../logs/php-fpm72:/var/log/php-fpm:cached
+    restart: always
+    command: php-fpm
+
+  openresty:
+    container_name: "espier-openresty"
+    build:
+      context: openresty/
+      args:
+        - LNMP_OPENRESTY_VERSION=${OPENRESTY_VERSION}
+    # privileged: true
+    ports:
+      - "${NGINX_HOST_HTTP_PORT}:80"
+      - "${NGINX_HOST_HTTPS_PORT}:443"
+      - "${VARNISH_BACKEND_PORT}:81"
+    networks:
+      - frontend
+      - backend
+    links:
+      - php-fpm72
+    depends_on:
+      - php-fpm72
+    volumes:
+      - ${APP_CODE_PATH_HOST}:${APP_CODE_PATH_CONTAINER}${APP_CODE_CONTAINER_FLAG}
+      - ./openresty/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf:rw
+      - ./openresty/conf.d:/etc/nginx/conf.d:cached
+      - ../logs/openresty:/usr/local/openresty/nginx/logs:cached
+    restart: always
+    # command:
+    #   - /bin/sh
+    #   - -c
+    #   - |
+    #       systemctl start snapd
+
+  ### MySQL ################################################
+  mysql:
+    container_name: "espier-mysql"
+    build:
+      context: ./mysql
+      args:
+        - MYSQL_VERSION=${MYSQL_VERSION}
+    ports:
+      - "${MYSQL_PORT}:3306"
+    networks:
+      - frontend
+      - backend
+    volumes:
+      - ./mysql/my.cnf:/etc/my.cnf:rw
+      - ${DATA_PATH_HOST}/mysql:/var/lib/mysql
+      - ../logs/mysql:/var/lib/mysql-logs:cached
+    environment:
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - TZ=${WORKSPACE_TIMEZONE}
+    restart: always
+    command: "--character-set-server=utf8"
+
+  ### Redis ################################################
+  redis:
+    container_name: "espier-redis"
+    build: ./redis
+    volumes:
+      - ./redis/redis.conf:/etc/redis.conf:rw
+      - ${DATA_PATH_HOST}/redis:/data
+    ports:
+      - "${REDIS_PORT}:6379"
+    networks:
+      - backend
+    command: "/etc/redis.conf"
+    restart: always
