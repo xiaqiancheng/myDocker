@@ -7,6 +7,34 @@ networks:
     driver: ${NETWORKS_DRIVER}
 
 services:
+  workspace:
+    container_name: "workspace"
+    build:
+      context: ./workspace/
+      args:
+        - CHANGE_SOURCE=${CHANGE_SOURCE}
+        - LNMP_PHP72_VERSION=${PHP72_VERSION}
+        - UBUNTU_SOURCE=${UBUNTU_SOURCE}
+        - INSTALL_PHPREDIS=${PHP_FPM_INSTALL_PHPREDIS}
+        - INSTALL_MEMCACHED=${PHP_FPM_INSTALL_MEMCACHED}
+        - INSTALL_SWOOLE=${PHP_FPM_INSTALL_SWOOLE}
+        - INSTALL_PYTHON=${WORKSPACE_INSTALL_PYTHON}
+        - INSTALL_SUPERVISOR=${WORKSPACE_INSTALL_SUPERVISOR}
+        - PUID=${WORKSPACE_PUID}
+        - PGID=${WORKSPACE_PGID}
+    ports:
+      - "${WORKSPACE_SSH_PORT}:22"
+      - "${WORKSPACE_BROWSERSYNC_HOST_PORT}:3000"
+      - "${WORKSPACE_BROWSERSYNC_UI_HOST_PORT}:3001"
+      - "${WORKSPACE_VUE_CLI_SERVE_HOST_PORT}:8080"
+      - "${WORKSPACE_VUE_CLI_UI_HOST_PORT}:8000"
+      - "${WORKSPACE_ANGULAR_CLI_SERVE_HOST_PORT}:4200"
+    networks:
+      - frontend
+      - backend
+    volumes:
+      - ${APP_CODE_PATH_HOST}:${APP_CODE_PATH_CONTAINER}${APP_CODE_CONTAINER_FLAG}
+      - ./php-worker/supervisord.d:/etc/supervisord.d
 
   php-fpm72:
     container_name: "espier-php"
@@ -26,8 +54,6 @@ services:
       - ./php72/php-dev.ini:/usr/local/etc/php/php.ini:cached
       - ./php72/php-fpm.conf:/usr/local/etc/php-fpm.conf:cached
       - ./php72/php-fpm.d:/usr/local/etc/php-fpm.d:cached
-      - ./php72/worker/supervisor:/etc/supervisor:cached
-      - ./php72/worker/crontabs/root:/var/spool/cron/crontabs/root:cached
       - ../logs/php-fpm72:/var/log/php-fpm:cached
     restart: always
     command: php-fpm
@@ -100,3 +126,25 @@ services:
       - backend
     command: "/etc/redis.conf"
     restart: always
+
+  ### PHP Worker ############################################
+  php-worker:
+    build:
+      context: ./php-worker
+      args:
+        - CHANGE_SOURCE=${CHANGE_SOURCE}
+        - LNMP_PHP72_VERSION=${PHP72_VERSION}
+        - INSTALL_PHPREDIS=${PHP_FPM_INSTALL_PHPREDIS}
+        - INSTALL_MEMCACHED=${PHP_FPM_INSTALL_MEMCACHED}
+        - INSTALL_SWOOLE=${PHP_FPM_INSTALL_SWOOLE}
+        - PUID=${PHP_WORKER_PUID}
+        - PGID=${PHP_WORKER_PGID}
+    volumes:
+      - ${APP_CODE_PATH_HOST}:${APP_CODE_PATH_CONTAINER}${APP_CODE_CONTAINER_FLAG}
+      - ./php-worker/supervisord.d:/etc/supervisord.d
+    depends_on:
+      - workspace
+    extra_hosts:
+      - "dockerhost:${DOCKER_HOST_IP}"
+    networks:
+      - backend
