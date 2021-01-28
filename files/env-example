@@ -68,6 +68,8 @@ VARNISH_PORT=6081
 VARNISH_BACKEND_PORT=81
 VARNISHD_PARAMS="-p default_ttl=3600 -p default_grace=3600"
 
+# Enter your Docker Host IP (will be appended to /etc/hosts). Default is `10.0.75.1`
+DOCKER_HOST_IP=10.0.75.1
 
 
 
