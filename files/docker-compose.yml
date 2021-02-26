@@ -74,8 +74,10 @@ services:
       - backend
     links:
       - php-fpm72
+      - php-fpm74
     depends_on:
       - php-fpm72
+      - php-fpm74
     volumes:
       - ${APP_CODE_PATH_HOST}:${APP_CODE_PATH_CONTAINER}${APP_CODE_CONTAINER_FLAG}
       - ./openresty/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf:rw
@@ -148,3 +150,29 @@ services:
       - "dockerhost:${DOCKER_HOST_IP}"
     networks:
       - backend
+
+  php-fpm74:
+    container_name: "salesperson-php"
+    build:
+      context: php74/
+      args:
+        - LNMP_PHP74_VERSION=${PHP74_VERSION}
+        - INSTALL_PHPREDIS=${PHP_FPM_INSTALL_PHPREDIS}
+        - INSTALL_MEMCACHED=${PHP_FPM_INSTALL_MEMCACHED}
+        - INSTALL_SWOOLE=${PHP_FPM_INSTALL_SWOOLE}
+        - INSTALL_BCMATH=${PHP_FPM_INSTALL_BCMATH}
+        - INSTALL_OPCACHE=${PHP_FPM_INSTALL_OPCACHE}
+        - INSTALL_GETTEXT=${PHP_FPM_INSTALL_GETTEXT}
+        - INSTALL_AMQP=${PHP_WORKER_INSTALL_AMQP}
+    ports:
+      - "9001:9000"
+    networks:
+      - backend
+    volumes:
+      - ${APP_CODE_PATH_HOST}:${APP_CODE_PATH_CONTAINER}${APP_CODE_CONTAINER_FLAG}
+      - ./php74/php-dev.ini:/usr/local/etc/php/php.ini:cached
+      - ./php74/php-fpm.conf:/usr/local/etc/php-fpm.conf:cached
+      - ./php74/php-fpm.d:/usr/local/etc/php-fpm.d:cached
+      - ../logs/php-fpm74:/var/log/php-fpm:cached
+    restart: always
+    command: php-fpm
