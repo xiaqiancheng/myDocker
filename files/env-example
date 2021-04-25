@@ -83,5 +83,13 @@ CHANGE_SOURCE=false
 # Set CHANGE_SOURCE and UBUNTU_SOURCE option if you want to change the Ubuntu system sources.list file.
 UBUNTU_SOURCE=aliyun
 
+### RABBITMQ ##############################################
+
+RABBITMQ_NODE_HOST_PORT=5672
+RABBITMQ_MANAGEMENT_HTTP_HOST_PORT=15672
+RABBITMQ_MANAGEMENT_HTTPS_HOST_PORT=15671
+RABBITMQ_DEFAULT_USER=guest
+RABBITMQ_DEFAULT_PASS=guest
+
 
 
