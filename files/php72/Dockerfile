@@ -75,6 +75,21 @@ RUN if [ ${INSTALL_MEMCACHED} = true ]; then \
     && docker-php-ext-enable memcached \
 ;fi
 
+###########################################################################
+# libSADKExtension EXTENSION
+###########################################################################
+
+COPY ./extensions/libSADKExtension.so /home/libSADKExtension.so
+
+ARG INSTALL_SADKExtension=false
+
+RUN if [ ${INSTALL_SADKExtension} = true ]; then \
+  cp /home/libSADKExtension.so /usr/local/lib/php/extensions/no-debug-non-zts-20170718/libSADKExtension.so && \
+  echo "extension=libSADKExtension.so" > /usr/local/etc/php/conf.d/libSADKExtension.ini \
+;fi
+
+RUN rm -f /home/libSADKExtension.so
+
 # 安装 Composer
 ENV COMPOSER_HOME /root/composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
