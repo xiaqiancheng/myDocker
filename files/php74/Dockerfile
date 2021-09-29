@@ -136,6 +136,22 @@ RUN if [ ${INSTALL_MONGO} = true ]; then \
     ;fi \
 ;fi
 
+###########################################################################
+# Memcache:
+###########################################################################
+
+ARG INSTALL_MEMCACHE=false
+
+RUN if [ ${INSTALL_MEMCACHE} = true ]; then \
+    # Install the php memcached extension
+    if [ $(php -r "echo PHP_MAJOR_VERSION;") = "5" ]; then \
+      pecl install memcache-4.0.5.2; \
+    else \
+      pecl install memcache-4.0.5.2; \
+    fi \
+    && docker-php-ext-enable memcache \
+;fi
+
 # 安装 Composer
 ENV COMPOSER_HOME /root/composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
