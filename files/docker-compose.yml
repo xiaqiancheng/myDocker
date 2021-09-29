@@ -76,9 +76,11 @@ services:
     links:
       - php-fpm72
       - php-fpm74
+      # - php54
     depends_on:
       - php-fpm72
       - php-fpm74
+      # - php54
     volumes:
       - ${APP_CODE_PATH_HOST}:${APP_CODE_PATH_CONTAINER}${APP_CODE_CONTAINER_FLAG}
       - ./openresty/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf:rw
@@ -119,9 +121,9 @@ services:
   ### Redis ################################################
   redis:
     container_name: "espier-redis"
-    build: ./redis
+    build: ./redis-sentinel/redis
     volumes:
-      - ./redis/redis.conf:/etc/redis.conf:rw
+      - ./redis-sentinel/redis/redis.conf:/etc/redis.conf:rw
       - ${DATA_PATH_HOST}/redis:/data
     ports:
       - "${REDIS_PORT}:6379"
@@ -130,7 +132,59 @@ services:
     command: "/etc/redis.conf"
     restart: always
 
-  ### PHP Worker ############################################
+  ### Redis Slave1 ################################################
+  redis-slave1:
+    container_name: "espier-redis-slave1"
+    build: ./redis-sentinel/redis-slave1
+    volumes:
+      - ./redis-sentinel/redis-slave1/redis.conf:/etc/redis.conf:rw
+      - ${DATA_PATH_HOST}/redis:/data
+    ports:
+      - "${REDIS_SLAVE1_PORT}:6379"
+    networks:
+      - backend
+    command: "/etc/redis.conf"
+    restart: always
+    links:
+      - redis
+
+  sentinel1:
+    image: redis
+    container_name: redis-sentinel-1
+    networks:
+      - backend
+    command: redis-sentinel /usr/local/etc/redis/sentinel.conf
+    restart: always
+    ports:
+      - 26379:26379
+    volumes:
+      - ./redis-sentinel/sentinel:/usr/local/etc/redis
+
+  sentinel2:
+    image: redis
+    container_name: redis-sentinel-2
+    networks:
+      - backend
+    command: redis-sentinel /usr/local/etc/redis/sentinel.conf
+    restart: always
+    ports:
+      - 26380:26379
+    volumes:
+      - ./redis-sentinel/sentinel:/usr/local/etc/redis
+    
+  sentinel3:
+    image: redis
+    container_name: redis-sentinel-3
+    networks:
+      - backend
+    command: redis-sentinel /usr/local/etc/redis/sentinel.conf
+    restart: always
+    ports:
+      - 26381:26379
+    volumes:
+      - ./redis-sentinel/sentinel:/usr/local/etc/redis
+
+  ## PHP Worker ############################################
   php-worker:
     build:
       context: ./php-worker
@@ -165,6 +219,7 @@ services:
         - INSTALL_OPCACHE=${PHP_FPM_INSTALL_OPCACHE}
         - INSTALL_GETTEXT=${PHP_FPM_INSTALL_GETTEXT}
         - INSTALL_AMQP=${PHP_WORKER_INSTALL_AMQP}
+        - INSTALL_MONGO=${PHP_FPM_INSTALL_MONGO}
     ports:
       - "9001:9000"
     networks:
@@ -196,3 +251,22 @@ services:
       - php-fpm74
     networks:
       - backend
+
+  php54:
+    image: crakmedia/php54-fpm-nginx
+    container_name: php54
+    volumes:
+      - /Users/xiaqiancheng/Project/shopex/mabang:${APP_CODE_PATH_CONTAINER}${APP_CODE_CONTAINER_FLAG}
+      - ./php54-fpm-nginx/php.ini:/etc/php.ini:cached
+      - ./php54-fpm-nginx/conf.d:/etc/nginx/conf.d:cached
+      - ../logs/nginx:/usr/share/nginx/logs:cached
+    ports:
+      - "9002:9000"
+      - "${NGINX_HOST_HTTP_PORT}:80"
+      - "${NGINX_HOST_HTTPS_PORT}:443"
+      - "${VARNISH_BACKEND_PORT}:81"
+    restart: always
+    networks:
+      - backend
+    depends_on:
+      - php-fpm72

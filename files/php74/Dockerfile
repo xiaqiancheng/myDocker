@@ -1,5 +1,12 @@
 ARG LNMP_PHP74_VERSION
 FROM php:${LNMP_PHP74_VERSION}
+
+#COPY ./apt/sources.list /etc/apt/sources.list
+
+# RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/' /etc/apt/sources.list && \
+#     sed -i 's/security.debian.org/mirrors.aliyun.com/' /etc/apt/sources.list && \
+#     sed -i 's/security-cdn.debian.org/mirrors.aliyun.com/' /etc/apt/sources.list 
+
 RUN apt-get update && apt-get install -y \
         apt-utils \
         libfreetype6-dev \
@@ -55,6 +62,7 @@ RUN if [ ${INSTALL_SWOOLE} = true ]; then \
 ARG INSTALL_MEMCACHED=false
 
 RUN if [ ${INSTALL_MEMCACHED} = true ]; then \
+    apt-get update && apt-get install -y libmemcached-dev && \
     # Install the php memcached extension
     if [ $(php -r "echo PHP_MAJOR_VERSION;") = "5" ]; then \
       pecl install memcached-2.2.0; \
@@ -97,7 +105,7 @@ RUN if [ ${INSTALL_AMQP} = true ]; then \
     # download and install manually, to make sure it's compatible with ampq installed by pecl later
     # install cmake first
     apt-get -y install cmake && \
-    curl -L -o /tmp/rabbitmq-c.tar.gz https://github.com/alanxz/rabbitmq-c/archive/refs/tags/v0.11.0.tar.gz && \
+    curl -L -o /tmp/rabbitmq-c.tar.gz https://github.com/alanxz/rabbitmq-c/archive/master.tar.gz && \
     mkdir -p rabbitmq-c && \
     tar -C rabbitmq-c -zxvf /tmp/rabbitmq-c.tar.gz --strip 1 && \
     cd rabbitmq-c/ && \
@@ -109,6 +117,23 @@ RUN if [ ${INSTALL_AMQP} = true ]; then \
     docker-php-ext-enable amqp && \
     # Install the sockets extension
     docker-php-ext-install sockets \
+;fi
+
+###########################################################################
+# MongoDB:
+###########################################################################
+
+ARG INSTALL_MONGO=false
+
+RUN if [ ${INSTALL_MONGO} = true ]; then \
+    # Install the mongodb extension
+    if [ $(php -r "echo PHP_MAJOR_VERSION;") = "5" ]; then \
+      pecl install mongo && \
+      docker-php-ext-enable mongo \
+    ;else \
+      pecl install mongodb && \
+      docker-php-ext-enable mongodb \
+    ;fi \
 ;fi
 
 # 安装 Composer
