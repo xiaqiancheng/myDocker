@@ -76,11 +76,11 @@ services:
     links:
       - php-fpm72
       - php-fpm74
-      # - php54
+      - php54
     depends_on:
       - php-fpm72
       - php-fpm74
-      # - php54
+      - php54
     volumes:
       - ${APP_CODE_PATH_HOST}:${APP_CODE_PATH_CONTAINER}${APP_CODE_CONTAINER_FLAG}
       - ./openresty/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf:rw
@@ -253,21 +253,19 @@ services:
     networks:
       - backend
 
-  # php54:
-  #   image: crakmedia/php54-fpm-nginx
-  #   container_name: php54
-  #   volumes:
-  #     - /Users/xiaqiancheng/Project/shopex/mabang:${APP_CODE_PATH_CONTAINER}${APP_CODE_CONTAINER_FLAG}
-  #     - ./php54-fpm-nginx/php.ini:/etc/php.ini:cached
-  #     - ./php54-fpm-nginx/conf.d:/etc/nginx/conf.d:cached
-  #     - ../logs/nginx:/usr/share/nginx/logs:cached
-  #   ports:
-  #     - "9002:9000"
-  #     - "${NGINX_HOST_HTTP_PORT}:80"
-  #     - "${NGINX_HOST_HTTPS_PORT}:443"
-  #     - "${VARNISH_BACKEND_PORT}:81"
-  #   restart: always
-  #   networks:
-  #     - backend
-  #   depends_on:
-  #     - php-fpm72
+  php54:
+    image: crakmedia/php54-fpm-nginx
+    container_name: php54
+    volumes:
+      - /Users/xiaqiancheng/Project/shopex/mabang:${APP_CODE_PATH_CONTAINER}${APP_CODE_CONTAINER_FLAG}
+      - ./php54-fpm-nginx/php.ini:/etc/php.ini:cached
+      - ./php54-fpm-nginx/conf.d:/etc/nginx/conf.d:cached
+      - ../logs/nginx:/usr/share/nginx/logs:cached
+    ports:
+      - "9002:9000"
+      - "8088:80"
+      # - "${NGINX_HOST_HTTPS_PORT}:443"
+      # - "${VARNISH_BACKEND_PORT}:81"
+    restart: always
+    networks:
+      - backend
